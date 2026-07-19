@@ -4,6 +4,7 @@ import { db } from '../lib/db'
 import type { RecurrenceFrequency, Transaction, TransactionType } from '../types'
 import { Button, Card, EmptyState, Input, Label, Select } from '../components/ui'
 import { formatMoney, monthKeyOf, monthLabel, todayIso } from '../lib/utils'
+import { useLang } from '../lib/i18n'
 
 const EMPTY_FORM = {
   type: 'expense' as TransactionType,
@@ -16,6 +17,8 @@ const EMPTY_FORM = {
 }
 
 export default function Transactions() {
+  const { t, locale, currency, translateCategoryName } = useLang()
+  const money = (amount: number) => formatMoney(amount, locale, currency)
   const categories = useLiveQuery(() => db.categories.toArray(), [])
   const transactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().toArray(), [])
 
@@ -29,14 +32,14 @@ export default function Transactions() {
   const categoriesForType = categories?.filter((c) => c.type === form.type) ?? []
 
   const monthOptions = useMemo(() => {
-    const keys = new Set((transactions ?? []).map((t) => monthKeyOf(t.date)))
+    const keys = new Set((transactions ?? []).map((tx) => monthKeyOf(tx.date)))
     return Array.from(keys).sort().reverse()
   }, [transactions])
 
   const filtered = useMemo(() => {
-    return (transactions ?? []).filter((t) => {
-      if (filterType !== 'all' && t.type !== filterType) return false
-      if (filterMonth !== 'all' && monthKeyOf(t.date) !== filterMonth) return false
+    return (transactions ?? []).filter((tx) => {
+      if (filterType !== 'all' && tx.type !== filterType) return false
+      if (filterMonth !== 'all' && monthKeyOf(tx.date) !== filterMonth) return false
       return true
     })
   }, [transactions, filterType, filterMonth])
@@ -52,16 +55,16 @@ export default function Transactions() {
     setShowForm(false)
   }
 
-  function startEdit(t: Transaction) {
-    setEditingId(t.id!)
+  function startEdit(tx: Transaction) {
+    setEditingId(tx.id!)
     setForm({
-      type: t.type,
-      amount: String(t.amount),
-      categoryId: String(t.categoryId),
-      description: t.description,
-      date: t.date,
-      recurring: t.recurring,
-      recurrenceFrequency: t.recurrenceFrequency ?? 'monthly',
+      type: tx.type,
+      amount: String(tx.amount),
+      categoryId: String(tx.categoryId),
+      description: tx.description,
+      date: tx.date,
+      recurring: tx.recurring,
+      recurrenceFrequency: tx.recurrenceFrequency ?? 'monthly',
     })
     setShowForm(true)
   }
@@ -70,11 +73,11 @@ export default function Transactions() {
     e.preventDefault()
     const amount = Number(form.amount)
     if (!amount || amount <= 0) {
-      setError('Le montant doit être positif')
+      setError(t('errorAmount'))
       return
     }
     if (!form.categoryId) {
-      setError('Choisis une catégorie')
+      setError(t('errorCategory'))
       return
     }
     const payload: Transaction = {
@@ -100,9 +103,9 @@ export default function Transactions() {
 
   const grouped = useMemo(() => {
     const map = new Map<string, Transaction[]>()
-    for (const t of filtered) {
-      if (!map.has(t.date)) map.set(t.date, [])
-      map.get(t.date)!.push(t)
+    for (const tx of filtered) {
+      if (!map.has(tx.date)) map.set(tx.date, [])
+      map.get(tx.date)!.push(tx)
     }
     return Array.from(map.entries()).sort((a, b) => (a[0] < b[0] ? 1 : -1))
   }, [filtered])
@@ -111,8 +114,8 @@ export default function Transactions() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-purple-950">Transactions</h2>
-          <p className="text-sm text-purple-400">Tous tes revenus et dépenses.</p>
+          <h2 className="text-2xl font-bold text-purple-950">{t('transactionsTitle')}</h2>
+          <p className="text-sm text-purple-400">{t('transactionsSubtitle')}</p>
         </div>
         <Button
           onClick={() => {
@@ -120,7 +123,7 @@ export default function Transactions() {
             if (showForm) resetForm()
           }}
         >
-          {showForm ? 'Fermer' : '+ Ajouter'}
+          {showForm ? t('closeButton') : t('addButton')}
         </Button>
       </div>
 
@@ -141,14 +144,16 @@ export default function Transactions() {
                       : 'bg-purple-50 text-purple-400'
                   }`}
                 >
-                  {type === 'expense' ? '💸 Dépense' : '💰 Revenu'}
+                  {type === 'expense' ? t('typeExpense') : t('typeIncome')}
                 </button>
               ))}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label>Montant (€)</Label>
+                <Label>
+                  {t('amountLabel')} ({currency === 'ILS' ? '₪' : '€'})
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -159,26 +164,26 @@ export default function Transactions() {
                 />
               </div>
               <div>
-                <Label>Catégorie</Label>
+                <Label>{t('categoryLabel')}</Label>
                 <Select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-                  <option value="">Choisir...</option>
+                  <option value="">{t('categoryPlaceholder')}</option>
                   {categoriesForType.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.icon} {c.name}
+                      {c.icon} {translateCategoryName(c.name)}
                     </option>
                   ))}
                 </Select>
               </div>
               <div>
-                <Label>Date</Label>
+                <Label>{t('dateLabel')}</Label>
                 <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>{t('descriptionLabel')}</Label>
                 <Input
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="ex: Courses Carrefour"
+                  placeholder={t('descriptionPlaceholder')}
                 />
               </div>
             </div>
@@ -191,7 +196,7 @@ export default function Transactions() {
                   onChange={(e) => setForm({ ...form, recurring: e.target.checked })}
                   className="h-4 w-4 rounded accent-purple-600"
                 />
-                Récurrente
+                {t('recurringLabel')}
               </label>
               {form.recurring && (
                 <Select
@@ -199,31 +204,31 @@ export default function Transactions() {
                   onChange={(e) => setForm({ ...form, recurrenceFrequency: e.target.value as RecurrenceFrequency })}
                   className="w-40"
                 >
-                  <option value="weekly">Hebdomadaire</option>
-                  <option value="monthly">Mensuelle</option>
-                  <option value="yearly">Annuelle</option>
+                  <option value="weekly">{t('freqWeekly')}</option>
+                  <option value="monthly">{t('freqMonthly')}</option>
+                  <option value="yearly">{t('freqYearly')}</option>
                 </Select>
               )}
             </div>
 
             {error && <p className="text-sm text-red-500">{error}</p>}
 
-            <Button type="submit">{editingId ? 'Enregistrer' : 'Ajouter'}</Button>
+            <Button type="submit">{editingId ? t('saveButton') : t('addPlainButton')}</Button>
           </form>
         </Card>
       )}
 
       <div className="flex flex-wrap gap-3">
         <Select value={filterType} onChange={(e) => setFilterType(e.target.value as 'all' | TransactionType)} className="w-40">
-          <option value="all">Tous types</option>
-          <option value="expense">Dépenses</option>
-          <option value="income">Revenus</option>
+          <option value="all">{t('filterAllTypes')}</option>
+          <option value="expense">{t('filterExpenses')}</option>
+          <option value="income">{t('filterIncomes')}</option>
         </Select>
         <Select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="w-48">
-          <option value="all">Tous les mois</option>
+          <option value="all">{t('filterAllMonths')}</option>
           {monthOptions.map((m) => (
             <option key={m} value={m}>
-              {monthLabel(m)}
+              {monthLabel(m, locale)}
             </option>
           ))}
         </Select>
@@ -231,19 +236,19 @@ export default function Transactions() {
 
       <Card>
         {grouped.length === 0 ? (
-          <EmptyState icon="🧾" text="Aucune transaction pour l'instant." />
+          <EmptyState icon="🧾" text={t('transactionsEmpty')} />
         ) : (
           <div className="space-y-5">
             {grouped.map(([date, txs]) => (
               <div key={date}>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-purple-300">
-                  {new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(date))}
+                  {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(date))}
                 </p>
                 <ul className="space-y-2">
-                  {txs.map((t) => {
-                    const cat = categoryFor(t.categoryId)
+                  {txs.map((tx) => {
+                    const cat = categoryFor(tx.categoryId)
                     return (
-                      <li key={t.id} className="group flex items-center justify-between rounded-xl bg-purple-50/60 px-3 py-2.5">
+                      <li key={tx.id} className="group flex items-center justify-between rounded-xl bg-purple-50/60 px-3 py-2.5">
                         <div className="flex items-center gap-3">
                           <span
                             className="flex h-9 w-9 items-center justify-center rounded-full text-base"
@@ -253,24 +258,25 @@ export default function Transactions() {
                           </span>
                           <div>
                             <p className="text-sm font-medium text-purple-900">
-                              {t.description || cat?.name} {t.recurring && <span title="Récurrente">🔁</span>}
+                              {tx.description || (cat ? translateCategoryName(cat.name) : '')}{' '}
+                              {tx.recurring && <span title={t('recurringTitle')}>🔁</span>}
                             </p>
-                            <p className="text-xs text-purple-400">{cat?.name}</p>
+                            <p className="text-xs text-purple-400">{cat ? translateCategoryName(cat.name) : ''}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                            {t.type === 'income' ? '+' : '-'}
-                            {formatMoney(t.amount)}
+                          <span className={`text-sm font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
+                            {tx.type === 'income' ? '+' : '-'}
+                            {money(tx.amount)}
                           </span>
                           <button
-                            onClick={() => startEdit(t)}
+                            onClick={() => startEdit(tx)}
                             className="cursor-pointer rounded-lg px-2 py-1 text-xs text-purple-400 opacity-0 hover:bg-purple-100 group-hover:opacity-100"
                           >
                             ✏️
                           </button>
                           <button
-                            onClick={() => handleDelete(t.id!)}
+                            onClick={() => handleDelete(tx.id!)}
                             className="cursor-pointer rounded-lg px-2 py-1 text-xs text-red-400 opacity-0 hover:bg-red-50 group-hover:opacity-100"
                           >
                             🗑️
