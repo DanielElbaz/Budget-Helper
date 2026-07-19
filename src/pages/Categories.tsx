@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { db } from '../lib/db'
 import type { Category, TransactionType } from '../types'
 import { Button, Card, Input, Label, Select } from '../components/ui'
+import { useLang } from '../lib/i18n'
 
 const ICON_CHOICES = ['🏠', '🛒', '🚗', '🎮', '⚕️', '📱', '🛍️', '📦', '💼', '💻', '💰', '🍽️', '✈️', '🎓', '🐾', '🎁']
 const COLOR_CHOICES = [
@@ -13,6 +14,7 @@ const COLOR_CHOICES = [
 const EMPTY_FORM = { name: '', icon: ICON_CHOICES[0], color: COLOR_CHOICES[0], type: 'expense' as TransactionType }
 
 export default function Categories() {
+  const { t, translateCategoryName } = useLang()
   const categories = useLiveQuery(() => db.categories.toArray(), [])
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -35,7 +37,7 @@ export default function Categories() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setError('Le nom est requis')
+      setError(t('errorName'))
       return
     }
     if (editingId) {
@@ -52,7 +54,7 @@ export default function Categories() {
       db.budgets.where('categoryId').equals(id).first(),
     ])
     if (txCount > 0) {
-      alert('Impossible de supprimer : des transactions utilisent cette catégorie.')
+      alert(t('deleteCategoryBlocked'))
       return
     }
     if (budget) await db.budgets.delete(budget.id!)
@@ -63,29 +65,29 @@ export default function Categories() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-purple-950">Catégories</h2>
-        <p className="text-sm text-purple-400">Organise tes revenus et dépenses par catégorie.</p>
+        <h2 className="text-2xl font-bold text-purple-950">{t('categoriesTitle')}</h2>
+        <p className="text-sm text-purple-400">{t('categoriesSubtitle')}</p>
       </div>
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <h3 className="font-semibold text-purple-900">{editingId ? 'Modifier la catégorie' : 'Nouvelle catégorie'}</h3>
+          <h3 className="font-semibold text-purple-900">{editingId ? t('editCategoryTitle') : t('newCategoryTitle')}</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Nom</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="ex: Vacances" />
+              <Label>{t('nameLabel')}</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t('namePlaceholder')} />
             </div>
             <div>
-              <Label>Type</Label>
+              <Label>{t('typeLabel')}</Label>
               <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as TransactionType })}>
-                <option value="expense">Dépense</option>
-                <option value="income">Revenu</option>
+                <option value="expense">{t('typeOptionExpense')}</option>
+                <option value="income">{t('typeOptionIncome')}</option>
               </Select>
             </div>
           </div>
 
           <div>
-            <Label>Icône</Label>
+            <Label>{t('iconLabel')}</Label>
             <div className="flex flex-wrap gap-2">
               {ICON_CHOICES.map((icon) => (
                 <button
@@ -103,7 +105,7 @@ export default function Categories() {
           </div>
 
           <div>
-            <Label>Couleur</Label>
+            <Label>{t('colorLabel')}</Label>
             <div className="flex flex-wrap gap-2">
               {COLOR_CHOICES.map((color) => (
                 <button
@@ -122,10 +124,10 @@ export default function Categories() {
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="flex gap-2">
-            <Button type="submit">{editingId ? 'Enregistrer' : 'Ajouter'}</Button>
+            <Button type="submit">{editingId ? t('saveButton') : t('addPlainButton')}</Button>
             {editingId && (
               <Button type="button" variant="ghost" onClick={resetForm}>
-                Annuler
+                {t('cancelButton')}
               </Button>
             )}
           </div>
@@ -133,8 +135,8 @@ export default function Categories() {
       </Card>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <CategoryGroup title="Dépenses" categories={expenseCategories} onEdit={startEdit} onDelete={handleDelete} />
-        <CategoryGroup title="Revenus" categories={incomeCategories} onEdit={startEdit} onDelete={handleDelete} />
+        <CategoryGroup title={t('groupExpenses')} categories={expenseCategories} onEdit={startEdit} onDelete={handleDelete} translateCategoryName={translateCategoryName} emptyText={t('categoriesEmpty')} />
+        <CategoryGroup title={t('groupIncomes')} categories={incomeCategories} onEdit={startEdit} onDelete={handleDelete} translateCategoryName={translateCategoryName} emptyText={t('categoriesEmpty')} />
       </div>
     </div>
   )
@@ -145,11 +147,15 @@ function CategoryGroup({
   categories,
   onEdit,
   onDelete,
+  translateCategoryName,
+  emptyText,
 }: {
   title: string
   categories: Category[]
   onEdit: (c: Category) => void
   onDelete: (id: number) => void
+  translateCategoryName: (name: string) => string
+  emptyText: string
 }) {
   return (
     <Card>
@@ -164,7 +170,7 @@ function CategoryGroup({
               >
                 {c.icon}
               </span>
-              <span className="text-sm font-medium text-purple-900">{c.name}</span>
+              <span className="text-sm font-medium text-purple-900">{translateCategoryName(c.name)}</span>
             </div>
             <div className="flex gap-1">
               <button onClick={() => onEdit(c)} className="cursor-pointer rounded-lg px-2 py-1 text-xs text-purple-500 hover:bg-purple-100">
@@ -176,7 +182,7 @@ function CategoryGroup({
             </div>
           </li>
         ))}
-        {categories.length === 0 && <p className="py-4 text-center text-sm text-purple-300">Aucune catégorie</p>}
+        {categories.length === 0 && <p className="py-4 text-center text-sm text-purple-300">{emptyText}</p>}
       </ul>
     </Card>
   )

@@ -1,7 +1,7 @@
-export function formatMoney(amount: number) {
-  return new Intl.NumberFormat('fr-FR', {
+export function formatMoney(amount: number, locale = 'fr-FR', currency = 'EUR') {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'EUR',
+    currency,
     maximumFractionDigits: 2,
   }).format(amount)
 }
@@ -14,10 +14,10 @@ export function monthKeyOf(isoDate: string) {
   return isoDate.slice(0, 7)
 }
 
-export function monthLabel(monthKey: string) {
+export function monthLabel(monthKey: string, locale = 'fr-FR') {
   const [year, month] = monthKey.split('-').map(Number)
   const date = new Date(year, month - 1, 1)
-  return new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(date)
 }
 
 export function lastNMonthKeys(n: number, from = new Date()) {

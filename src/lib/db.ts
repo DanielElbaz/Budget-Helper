@@ -33,8 +33,10 @@ class BudgetDatabase extends Dexie {
 export const db = new BudgetDatabase()
 
 export async function ensureDefaultCategories() {
-  const count = await db.categories.count()
-  if (count === 0) {
-    await db.categories.bulkAdd(DEFAULT_CATEGORIES)
-  }
+  await db.transaction('rw', db.categories, async () => {
+    const count = await db.categories.count()
+    if (count === 0) {
+      await db.categories.bulkAdd(DEFAULT_CATEGORIES)
+    }
+  })
 }
