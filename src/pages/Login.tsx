@@ -16,7 +16,7 @@ export default function Login() {
     setError('')
     const { error: signInError } = await signIn(code)
     setSubmitting(false)
-    if (signInError) setError(t('loginError'))
+    if (signInError) setError(`${t('loginError')} (${signInError})`)
   }
 
   return (
