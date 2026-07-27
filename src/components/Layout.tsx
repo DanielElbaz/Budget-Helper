@@ -73,7 +73,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-purple-100 bg-white/70 px-4 py-3 backdrop-blur sm:hidden">
+        <header
+          className="flex items-center justify-between border-b border-purple-100 bg-white/70 px-4 py-3 backdrop-blur sm:hidden"
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        >
           <div className="flex items-center gap-2">
             <span className="text-2xl">💰</span>
             <h1 className="text-base font-bold text-purple-900">{t('appName')}</h1>
@@ -102,7 +105,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <QuickAddExpense />
 
-        <nav className="sticky bottom-0 flex justify-around border-t border-purple-100 bg-white/90 py-2 backdrop-blur sm:hidden">
+        <nav
+          className="sticky bottom-0 flex justify-around border-t border-purple-100 bg-white/90 pt-2 backdrop-blur sm:hidden"
+          style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+        >
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
