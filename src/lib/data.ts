@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Budget, Category, RecurrenceFrequency, Transaction } from '../types'
 import { DEFAULT_CATEGORIES } from './defaultCategories'
 import { supabase } from './supabase'
@@ -77,6 +77,10 @@ type TableName = 'categories' | 'transactions' | 'budgets'
 
 function useTable<T>(table: TableName, fromRow: (row: any) => T): T[] | undefined {
   const [data, setData] = useState<T[] | undefined>(undefined)
+  // Several components subscribe to the same table at once (e.g. the quick-add
+  // FAB and the current page both read categories) — each needs its own
+  // channel name, otherwise they collide on the same Realtime channel.
+  const channelName = useRef(`${table}-${Math.random().toString(36).slice(2)}`)
 
   useEffect(() => {
     let cancelled = false
@@ -95,7 +99,7 @@ function useTable<T>(table: TableName, fromRow: (row: any) => T): T[] | undefine
     load()
 
     const channel = supabase
-      .channel(`realtime:${table}`)
+      .channel(channelName.current)
       .on('postgres_changes', { event: '*', schema: 'public', table }, () => load())
       .subscribe()
 
