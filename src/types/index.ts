@@ -3,7 +3,7 @@ export type TransactionType = 'income' | 'expense'
 export type RecurrenceFrequency = 'weekly' | 'monthly' | 'yearly'
 
 export interface Category {
-  id?: number
+  id?: string
   name: string
   icon: string
   color: string
@@ -11,18 +11,20 @@ export interface Category {
 }
 
 export interface Transaction {
-  id?: number
+  id?: string
   type: TransactionType
   amount: number
-  categoryId: number
+  categoryId: string
   description: string
   date: string // ISO date string (yyyy-mm-dd)
   recurring: boolean
   recurrenceFrequency?: RecurrenceFrequency
+  // Set when this row was auto-generated from a recurring template transaction.
+  templateId?: string
 }
 
 export interface Budget {
-  id?: number
-  categoryId: number
+  id?: string
+  categoryId: string
   monthlyLimit: number
 }

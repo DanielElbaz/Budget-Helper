@@ -1,6 +1,5 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
-import { db } from '../lib/db'
+import { addBudget, deleteBudget, updateBudget, useBudgets, useCategories, useTransactions } from '../lib/data'
 import { Button, Card, Input } from '../components/ui'
 import { currentMonthKey, formatMoney, monthKeyOf, monthLabel } from '../lib/utils'
 import { useLang } from '../lib/i18n'
@@ -8,15 +7,17 @@ import { useLang } from '../lib/i18n'
 export default function Budgets() {
   const { t, locale, currency, translateCategoryName } = useLang()
   const money = (amount: number) => formatMoney(amount, locale, currency)
-  const categories = useLiveQuery(() => db.categories.where('type').equals('expense').toArray(), [])
-  const budgets = useLiveQuery(() => db.budgets.toArray(), [])
-  const transactions = useLiveQuery(() => db.transactions.where('type').equals('expense').toArray(), [])
+  const allCategories = useCategories()
+  const categories = allCategories?.filter((c) => c.type === 'expense')
+  const budgets = useBudgets()
+  const allTransactions = useTransactions()
+  const transactions = allTransactions?.filter((t) => t.type === 'expense')
 
-  const [drafts, setDrafts] = useState<Record<number, string>>({})
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
   const monthKey = currentMonthKey()
 
   const spentByCategory = useMemo(() => {
-    const map = new Map<number, number>()
+    const map = new Map<string, number>()
     for (const tx of transactions ?? []) {
       if (monthKeyOf(tx.date) !== monthKey) continue
       map.set(tx.categoryId, (map.get(tx.categoryId) ?? 0) + tx.amount)
@@ -24,24 +25,24 @@ export default function Budgets() {
     return map
   }, [transactions, monthKey])
 
-  function budgetFor(categoryId: number) {
+  function budgetFor(categoryId: string) {
     return budgets?.find((b) => b.categoryId === categoryId)
   }
 
-  async function saveBudget(categoryId: number, value: string) {
+  async function saveBudget(categoryId: string, value: string) {
     const limit = Number(value)
     if (!limit || limit <= 0) return
     const existing = budgetFor(categoryId)
     if (existing) {
-      await db.budgets.update(existing.id!, { monthlyLimit: limit })
+      await updateBudget(existing.id!, { monthlyLimit: limit })
     } else {
-      await db.budgets.add({ categoryId, monthlyLimit: limit })
+      await addBudget({ categoryId, monthlyLimit: limit })
     }
     setDrafts((d) => ({ ...d, [categoryId]: '' }))
   }
 
-  async function removeBudget(id: number) {
-    await db.budgets.delete(id)
+  async function removeBudget(id: string) {
+    await deleteBudget(id)
   }
 
   const totalBudget = (budgets ?? []).reduce((sum, b) => sum + b.monthlyLimit, 0)

@@ -1,23 +1,17 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { db } from '../lib/db'
+import { addCategory, categoryUsage, deleteBudget, deleteCategory, updateCategory, useCategories } from '../lib/data'
+import { ICON_CHOICES, COLOR_CHOICES } from '../lib/defaultCategories'
 import type { Category, TransactionType } from '../types'
 import { Button, Card, Input, Label, Select } from '../components/ui'
 import { useLang } from '../lib/i18n'
-
-const ICON_CHOICES = ['🏠', '🛒', '🚗', '🎮', '⚕️', '📱', '🛍️', '📦', '💼', '💻', '💰', '🍽️', '✈️', '🎓', '🐾', '🎁']
-const COLOR_CHOICES = [
-  '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#06b6d4',
-  '#ec4899', '#6b7280', '#16a34a', '#0ea5e9', '#eab308', '#14b8a6',
-]
 
 const EMPTY_FORM = { name: '', icon: ICON_CHOICES[0], color: COLOR_CHOICES[0], type: 'expense' as TransactionType }
 
 export default function Categories() {
   const { t, translateCategoryName } = useLang()
-  const categories = useLiveQuery(() => db.categories.toArray(), [])
+  const categories = useCategories()
   const [form, setForm] = useState(EMPTY_FORM)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   const expenseCategories = categories?.filter((c) => c.type === 'expense') ?? []
@@ -41,24 +35,21 @@ export default function Categories() {
       return
     }
     if (editingId) {
-      await db.categories.update(editingId, form)
+      await updateCategory(editingId, form)
     } else {
-      await db.categories.add(form)
+      await addCategory(form)
     }
     resetForm()
   }
 
-  async function handleDelete(id: number) {
-    const [txCount, budget] = await Promise.all([
-      db.transactions.where('categoryId').equals(id).count(),
-      db.budgets.where('categoryId').equals(id).first(),
-    ])
-    if (txCount > 0) {
+  async function handleDelete(id: string) {
+    const { transactionCount, budgetId } = await categoryUsage(id)
+    if (transactionCount > 0) {
       alert(t('deleteCategoryBlocked'))
       return
     }
-    if (budget) await db.budgets.delete(budget.id!)
-    await db.categories.delete(id)
+    if (budgetId) await deleteBudget(budgetId)
+    await deleteCategory(id)
     if (editingId === id) resetForm()
   }
 
@@ -153,7 +144,7 @@ function CategoryGroup({
   title: string
   categories: Category[]
   onEdit: (c: Category) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
   translateCategoryName: (name: string) => string
   emptyText: string
 }) {
