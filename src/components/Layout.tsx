@@ -13,7 +13,7 @@ const NAV_ITEMS: { to: string; labelKey: TranslationKey; icon: string; end: bool
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { t, lang, setLang } = useLang()
+  const { t } = useLang()
   const { signOut } = useAuth()
 
   return (
@@ -46,26 +46,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="mt-auto space-y-3 pt-6">
-          <p className="mb-1 text-xs font-semibold text-purple-400">{t('langSwitchLabel')}</p>
-          <div className="flex gap-1 rounded-xl bg-purple-50 p-1">
-            <button
-              onClick={() => setLang('fr')}
-              className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
-                lang === 'fr' ? 'bg-purple-600 text-white' : 'text-purple-500 hover:bg-purple-100'
-              }`}
-            >
-              Français
-            </button>
-            <button
-              onClick={() => setLang('he')}
-              className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
-                lang === 'he' ? 'bg-purple-600 text-white' : 'text-purple-500 hover:bg-purple-100'
-              }`}
-            >
-              עברית
-            </button>
-          </div>
+        <div className="mt-auto pt-6">
           <button onClick={() => signOut()} className="w-full cursor-pointer rounded-lg py-1.5 text-xs font-medium text-purple-400 hover:bg-purple-50">
             {t('logoutButton')}
           </button>
@@ -80,24 +61,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             <span className="text-2xl">💰</span>
             <h1 className="text-base font-bold text-purple-900">{t('appName')}</h1>
-          </div>
-          <div className="flex gap-1 rounded-xl bg-purple-50 p-1">
-            <button
-              onClick={() => setLang('fr')}
-              className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
-                lang === 'fr' ? 'bg-purple-600 text-white' : 'text-purple-500'
-              }`}
-            >
-              FR
-            </button>
-            <button
-              onClick={() => setLang('he')}
-              className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
-                lang === 'he' ? 'bg-purple-600 text-white' : 'text-purple-500'
-              }`}
-            >
-              עב
-            </button>
           </div>
         </header>
 

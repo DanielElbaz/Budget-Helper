@@ -14,7 +14,9 @@ export default defineConfig({
       manifest: {
         name: 'Budget Helper',
         short_name: 'Budget',
-        description: "Suivi du budget familial à deux, revenus, dépenses fixes et compteurs par catégorie",
+        description: 'ניהול תקציב משפחתי משותף: הכנסות, הוצאות קבועות ומעקב לפי קטגוריה',
+        lang: 'he',
+        dir: 'rtl',
         theme_color: '#9333ea',
         background_color: '#faf5ff',
         display: 'standalone',
