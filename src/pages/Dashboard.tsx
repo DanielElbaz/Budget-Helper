@@ -1,16 +1,15 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { db } from '../lib/db'
+import { useBudgets, useCategories, useTransactions } from '../lib/data'
 import { Card, EmptyState } from '../components/ui'
 import { currentMonthKey, formatMoney, lastNMonthKeys, monthKeyOf, monthLabel } from '../lib/utils'
 import { useLang } from '../lib/i18n'
 
 export default function Dashboard() {
   const { t, locale, currency, translateCategoryName } = useLang()
-  const categories = useLiveQuery(() => db.categories.toArray(), [])
-  const transactions = useLiveQuery(() => db.transactions.toArray(), [])
-  const budgets = useLiveQuery(() => db.budgets.toArray(), [])
+  const categories = useCategories()
+  const transactions = useTransactions()
+  const budgets = useBudgets()
 
   const money = (amount: number) => formatMoney(amount, locale, currency)
   const monthKey = currentMonthKey()
@@ -22,7 +21,7 @@ export default function Dashboard() {
   const balance = totalIncome - totalExpense
 
   const pieData = useMemo(() => {
-    const map = new Map<number, number>()
+    const map = new Map<string, number>()
     for (const t of monthTxs) {
       if (t.type !== 'expense') continue
       map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + t.amount)

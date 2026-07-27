@@ -79,6 +79,29 @@ export const translations = {
     deleteCategoryBlocked: 'Impossible de supprimer : des transactions utilisent cette catégorie.',
 
     langSwitchLabel: 'Langue',
+
+    // Auth
+    loginTitle: 'Accès privé',
+    loginSubtitle: 'Entrez votre code d’accès partagé pour continuer.',
+    loginCodeLabel: 'Code d’accès',
+    loginButton: 'Entrer',
+    loginError: 'Code incorrect. Réessaie.',
+    logoutButton: 'Se déconnecter',
+    loginLoading: 'Connexion...',
+
+    // Quick add
+    quickAddButton: 'Ajout rapide',
+    quickAddPickCategory: 'Choisis une catégorie',
+    quickAddAmount: 'Montant dépensé',
+    quickAddConfirm: 'Enregistrer la dépense',
+    quickAddBack: '← Catégorie',
+    quickAddSuccess: 'Dépense ajoutée !',
+
+    // Recurring / fixed expenses
+    fixedExpensesLabel: 'Dépense fixe (revient chaque mois)',
+    fixedExpensesHint: 'Se répète automatiquement le mois suivant, pas besoin de la ressaisir.',
+    syncBadgeOn: 'Synchronisé',
+    syncBadgeOff: 'Hors ligne',
   },
   he: {
     appName: 'Budget Helper',
@@ -158,6 +181,29 @@ export const translations = {
     deleteCategoryBlocked: 'לא ניתן למחוק: יש תנועות המשויכות לקטגוריה זו.',
 
     langSwitchLabel: 'שפה',
+
+    // Auth
+    loginTitle: 'גישה פרטית',
+    loginSubtitle: 'הזינו את קוד הגישה המשותף כדי להמשיך.',
+    loginCodeLabel: 'קוד גישה',
+    loginButton: 'כניסה',
+    loginError: 'קוד שגוי. נסו שוב.',
+    logoutButton: 'התנתקות',
+    loginLoading: 'מתחבר...',
+
+    // Quick add
+    quickAddButton: 'הוספה מהירה',
+    quickAddPickCategory: 'בחר/י קטגוריה',
+    quickAddAmount: 'סכום שהוצא',
+    quickAddConfirm: 'שמירת ההוצאה',
+    quickAddBack: '← קטגוריה',
+    quickAddSuccess: 'ההוצאה נוספה!',
+
+    // Recurring / fixed expenses
+    fixedExpensesLabel: 'הוצאה קבועה (חוזרת כל חודש)',
+    fixedExpensesHint: 'חוזרת אוטומטית בחודש הבא, אין צורך להזין שוב.',
+    syncBadgeOn: 'מסונכרן',
+    syncBadgeOff: 'לא מקוון',
   },
 } as const satisfies Record<Lang, Record<string, string>>
 
@@ -165,15 +211,30 @@ export type TranslationKey = keyof (typeof translations)['fr']
 
 // Default seeded category names, translated for display (custom user categories stay as typed).
 export const defaultCategoryNameTranslations: Record<string, Partial<Record<Lang, string>>> = {
-  Logement: { he: 'דיור' },
-  Alimentation: { he: 'מזון' },
-  Transport: { he: 'תחבורה' },
-  Loisirs: { he: 'פנאי' },
-  Santé: { he: 'בריאות' },
-  Abonnements: { he: 'מנויים' },
-  Shopping: { he: 'קניות' },
-  'Autres dépenses': { he: 'הוצאות אחרות' },
-  Salaire: { he: 'משכורת' },
-  Freelance: { he: 'פרילנס' },
+  'Salaire conjoint 1': { he: 'משכורת בן/בת זוג 1' },
+  'Salaire conjoint 2': { he: 'משכורת בן/בת זוג 2' },
+  Allocations: { he: 'קצבאות' },
   'Autres revenus': { he: 'הכנסות אחרות' },
+
+  Logement: { he: 'דיור' },
+  'Électricité & Gaz': { he: 'חשמל וגז' },
+  Eau: { he: 'מים' },
+  'Internet & Téléphone': { he: 'אינטרנט וטלפון' },
+  Assurances: { he: 'ביטוחים' },
+  'Enfants & Éducation': { he: 'ילדים וחינוך' },
+  Santé: { he: 'בריאות' },
+  'Transport & Carburant': { he: 'תחבורה ודלק' },
+  'Banque & Crédits': { he: 'בנק והלוואות' },
+  Épargne: { he: 'חיסכון' },
+  Abonnements: { he: 'מנויים' },
+
+  'Alimentation & Courses': { he: 'אוכל וקניות' },
+  'Restaurants & Sorties': { he: 'מסעדות ובילויים' },
+  'Beauté & Soins': { he: 'טיפוח ויופי' },
+  Habillement: { he: 'ביגוד והנעלה' },
+  'Loisirs & Culture': { he: 'תרבות ופנאי' },
+  'Vacances & Voyages': { he: 'נסיעות וחופשות' },
+  'Cadeaux & Événements': { he: 'מתנות ואירועים' },
+  Animaux: { he: 'חיות מחמד' },
+  'Divers / Imprévus': { he: 'שונות / בלתי צפוי' },
 }

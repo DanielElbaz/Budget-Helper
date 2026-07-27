@@ -1,6 +1,5 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
-import { db } from '../lib/db'
+import { addTransaction, deleteTransaction, updateTransaction, useCategories, useTransactions } from '../lib/data'
 import type { RecurrenceFrequency, Transaction, TransactionType } from '../types'
 import { Button, Card, EmptyState, Input, Label, Select } from '../components/ui'
 import { formatMoney, monthKeyOf, monthLabel, todayIso } from '../lib/utils'
@@ -19,11 +18,12 @@ const EMPTY_FORM = {
 export default function Transactions() {
   const { t, locale, currency, translateCategoryName } = useLang()
   const money = (amount: number) => formatMoney(amount, locale, currency)
-  const categories = useLiveQuery(() => db.categories.toArray(), [])
-  const transactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().toArray(), [])
+  const categories = useCategories()
+  const allTransactions = useTransactions()
+  const transactions = useMemo(() => (allTransactions ?? []).slice().sort((a, b) => (a.date < b.date ? 1 : -1)), [allTransactions])
 
   const [form, setForm] = useState(EMPTY_FORM)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [filterType, setFilterType] = useState<'all' | TransactionType>('all')
   const [filterMonth, setFilterMonth] = useState('all')
@@ -44,7 +44,7 @@ export default function Transactions() {
     })
   }, [transactions, filterType, filterMonth])
 
-  function categoryFor(id: number) {
+  function categoryFor(id: string) {
     return categories?.find((c) => c.id === id)
   }
 
@@ -83,22 +83,22 @@ export default function Transactions() {
     const payload: Transaction = {
       type: form.type,
       amount,
-      categoryId: Number(form.categoryId),
+      categoryId: form.categoryId,
       description: form.description.trim(),
       date: form.date,
       recurring: form.recurring,
       recurrenceFrequency: form.recurring ? form.recurrenceFrequency : undefined,
     }
     if (editingId) {
-      await db.transactions.update(editingId, payload)
+      await updateTransaction(editingId, payload)
     } else {
-      await db.transactions.add(payload)
+      await addTransaction(payload)
     }
     resetForm()
   }
 
-  async function handleDelete(id: number) {
-    await db.transactions.delete(id)
+  async function handleDelete(id: string) {
+    await deleteTransaction(id)
   }
 
   const grouped = useMemo(() => {
@@ -188,27 +188,30 @@ export default function Transactions() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm text-purple-700">
-                <input
-                  type="checkbox"
-                  checked={form.recurring}
-                  onChange={(e) => setForm({ ...form, recurring: e.target.checked })}
-                  className="h-4 w-4 rounded accent-purple-600"
-                />
-                {t('recurringLabel')}
-              </label>
-              {form.recurring && (
-                <Select
-                  value={form.recurrenceFrequency}
-                  onChange={(e) => setForm({ ...form, recurrenceFrequency: e.target.value as RecurrenceFrequency })}
-                  className="w-40"
-                >
-                  <option value="weekly">{t('freqWeekly')}</option>
-                  <option value="monthly">{t('freqMonthly')}</option>
-                  <option value="yearly">{t('freqYearly')}</option>
-                </Select>
-              )}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 text-sm text-purple-700">
+                  <input
+                    type="checkbox"
+                    checked={form.recurring}
+                    onChange={(e) => setForm({ ...form, recurring: e.target.checked })}
+                    className="h-4 w-4 rounded accent-purple-600"
+                  />
+                  {t('fixedExpensesLabel')}
+                </label>
+                {form.recurring && (
+                  <Select
+                    value={form.recurrenceFrequency}
+                    onChange={(e) => setForm({ ...form, recurrenceFrequency: e.target.value as RecurrenceFrequency })}
+                    className="w-40"
+                  >
+                    <option value="weekly">{t('freqWeekly')}</option>
+                    <option value="monthly">{t('freqMonthly')}</option>
+                    <option value="yearly">{t('freqYearly')}</option>
+                  </Select>
+                )}
+              </div>
+              {form.recurring && <p className="mt-1 text-xs text-purple-400">{t('fixedExpensesHint')}</p>}
             </div>
 
             {error && <p className="text-sm text-red-500">{error}</p>}

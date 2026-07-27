@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useLang } from '../lib/i18n'
+import { useAuth } from '../lib/auth'
 import type { TranslationKey } from '../lib/translations'
+import QuickAddExpense from './QuickAddExpense'
 
 const NAV_ITEMS: { to: string; labelKey: TranslationKey; icon: string; end: boolean }[] = [
   { to: '/', labelKey: 'navDashboard', icon: '📊', end: true },
@@ -12,6 +14,7 @@ const NAV_ITEMS: { to: string; labelKey: TranslationKey; icon: string; end: bool
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { t, lang, setLang } = useLang()
+  const { signOut } = useAuth()
 
   return (
     <div className="flex min-h-screen">
@@ -43,7 +46,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="mt-auto pt-6">
+        <div className="mt-auto space-y-3 pt-6">
           <p className="mb-1 text-xs font-semibold text-purple-400">{t('langSwitchLabel')}</p>
           <div className="flex gap-1 rounded-xl bg-purple-50 p-1">
             <button
@@ -63,6 +66,9 @@ export default function Layout({ children }: { children: ReactNode }) {
               עברית
             </button>
           </div>
+          <button onClick={() => signOut()} className="w-full cursor-pointer rounded-lg py-1.5 text-xs font-medium text-purple-400 hover:bg-purple-50">
+            {t('logoutButton')}
+          </button>
         </div>
       </aside>
 
@@ -93,6 +99,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         </header>
 
         <main className="flex-1 p-4 sm:p-8">{children}</main>
+
+        <QuickAddExpense />
 
         <nav className="sticky bottom-0 flex justify-around border-t border-purple-100 bg-white/90 py-2 backdrop-blur sm:hidden">
           {NAV_ITEMS.map((item) => (
