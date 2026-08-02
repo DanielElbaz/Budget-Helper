@@ -274,13 +274,13 @@ export default function Transactions() {
                           </span>
                           <button
                             onClick={() => startEdit(tx)}
-                            className="cursor-pointer rounded-lg px-2 py-1 text-xs text-purple-400 opacity-0 hover:bg-purple-100 group-hover:opacity-100"
+                            className="cursor-pointer rounded-lg px-2 py-1 text-xs text-purple-400 hover:bg-purple-100 sm:opacity-0 sm:group-hover:opacity-100"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(tx.id!)}
-                            className="cursor-pointer rounded-lg px-2 py-1 text-xs text-red-400 opacity-0 hover:bg-red-50 group-hover:opacity-100"
+                            className="cursor-pointer rounded-lg px-2 py-1 text-xs text-red-400 hover:bg-red-50 sm:opacity-0 sm:group-hover:opacity-100"
                           >
                             🗑️
                           </button>
