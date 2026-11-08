@@ -14,9 +14,11 @@ export default defineConfig({
       manifest: {
         name: 'Budget Helper',
         short_name: 'Budget',
-        description: "Suivi du budget familial à deux, revenus, dépenses fixes et compteurs par catégorie",
-        theme_color: '#9333ea',
-        background_color: '#faf5ff',
+        description: 'ניהול תקציב משפחתי משותף: הכנסות, הוצאות קבועות ותקציב לכל קטגוריה',
+        lang: 'he',
+        dir: 'rtl',
+        theme_color: '#2563eb',
+        background_color: '#f8fafc',
         display: 'standalone',
         start_url: '/',
         scope: '/',
@@ -35,6 +37,12 @@ export default defineConfig({
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkOnly',
+          },
+          {
+            // Hebrew font: keep a copy so the app looks the same offline.
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
           },
         ],
       },

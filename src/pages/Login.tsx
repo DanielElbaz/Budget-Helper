@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Card, Input, Label } from '../components/ui'
+import { Lock, Wallet } from 'lucide-react'
+import { Button, Card, Field, Input } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useLang } from '../lib/i18n'
 
@@ -21,25 +22,35 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <div className="mb-6 text-center">
-          <span className="text-4xl">💰</span>
-          <h1 className="mt-2 text-xl font-bold text-purple-950">{t('loginTitle')}</h1>
-          <p className="mt-1 text-sm text-purple-400">{t('loginSubtitle')}</p>
+      <Card className="w-full max-w-sm p-6 sm:p-6">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white">
+            <Wallet className="h-7 w-7" aria-hidden />
+          </span>
+          <h1 className="mt-4 text-xl font-bold text-ink">{t('loginTitle')}</h1>
+          <p className="mt-1 text-sm text-ink-muted">{t('loginSubtitle')}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>{t('loginCodeLabel')}</Label>
-            <Input
-              type="password"
-              autoFocus
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full" disabled={submitting || !code}>
+          <Field label={t('loginCodeLabel')}>
+            {(id) => (
+              <Input
+                id={id}
+                type="password"
+                autoComplete="current-password"
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? 'login-error' : undefined}
+              />
+            )}
+          </Field>
+          {error && (
+            <p id="login-error" role="alert" className="text-sm font-medium text-red-600">
+              {error}
+            </p>
+          )}
+          <Button type="submit" icon={Lock} className="w-full" disabled={submitting || !code}>
             {submitting ? t('loginLoading') : t('loginButton')}
           </Button>
         </form>

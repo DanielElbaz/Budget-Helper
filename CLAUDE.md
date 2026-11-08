@@ -24,3 +24,16 @@ Ces règles s'appliquent à chaque nouvelle fonctionnalité, table, route ou int
    quoi que ce soit, et rejette les requêtes non signées ou rejouées.
 
 Après tout changement de schéma, lancer les advisors de sécurité Supabase.
+
+# Interface
+
+- Appli uniquement en hébreu (RTL), montants en shekels (₪). Utiliser les propriétés
+  logiques (`ms-`/`me-`/`ps-`/`pe-`/`start`/`end`), jamais `left`/`right` pour la mise en page.
+- Couleurs et police : tokens dans `src/index.css` (`brand-*`, `ink`, `line`, `surface`…),
+  pas de couleurs en dur dans les composants.
+- Composants partagés dans `src/components/ui.tsx` ; confirmations et messages via
+  `useFeedback()` (`run`, `confirm`, `toast`) — toute suppression demande confirmation,
+  toute écriture affiche un succès ou une erreur.
+- Icônes d'interface : `lucide-react` (pas d'emoji) ; les emoji restent pour les catégories
+  choisies par l'utilisateur. Zones tactiles d'au moins 44px.
+- Pour tout travail d'UI/UX, utiliser le skill `ui-ux-pro-max` (`.claude/skills/`).

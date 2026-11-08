@@ -13,7 +13,7 @@ export const translations = {
     statIncome: 'הכנסות',
     statExpense: 'הוצאות',
     statBalance: 'נשאר לחיות',
-    budgetAlertsTitle: '⚠️ תקציבים לעקוב אחריהם',
+    budgetAlertsTitle: 'תקציבים לעקוב אחריהם',
     budgetExceededSuffix: ' — חריגה',
     pieTitle: 'פילוח הוצאות',
     pieEmpty: 'אין הוצאות החודש.',
@@ -24,11 +24,11 @@ export const translations = {
     // Transactions
     transactionsTitle: 'תנועות',
     transactionsSubtitle: 'כל ההכנסות וההוצאות שלך.',
-    addButton: '+ הוספה',
+    addButton: 'הוספה',
     addPlainButton: 'הוספה',
     closeButton: 'סגירה',
-    typeExpense: '💸 הוצאה',
-    typeIncome: '💰 הכנסה',
+    typeExpense: 'הוצאה',
+    typeIncome: 'הכנסה',
     amountLabel: 'סכום',
     categoryLabel: 'קטגוריה',
     categoryPlaceholder: 'בחר/י...',
@@ -57,7 +57,7 @@ export const translations = {
     limitPlaceholder: 'תקרה',
     defineButton: 'קביעה',
     noExpenseCategories: 'צריך קודם ליצור קטגוריות הוצאה בלשונית קטגוריות.',
-    budgetExceeded: '⚠️ חריגה מהתקציב',
+    budgetExceeded: 'חריגה מהתקציב',
 
     // Categories
     categoriesTitle: 'קטגוריות',
@@ -93,7 +93,7 @@ export const translations = {
     quickAddPickCategory: 'בחר/י קטגוריה',
     quickAddAmount: 'סכום שהוצא',
     quickAddConfirm: 'שמירת ההוצאה',
-    quickAddBack: '← קטגוריה',
+    quickAddBack: 'חזרה לקטגוריות',
     quickAddSuccess: 'ההוצאה נוספה!',
 
     // Recurring / fixed expenses
@@ -101,6 +101,28 @@ export const translations = {
     fixedExpensesHint: 'חוזרת אוטומטית בחודש הבא, אין צורך להזין שוב.',
     syncBadgeOn: 'מסונכרן',
     syncBadgeOff: 'לא מקוון',
+
+    // Feedback & confirmations
+    deleteButton: 'מחיקה',
+    editButton: 'עריכה',
+    confirmDeleteTransaction: 'למחוק את התנועה?',
+    confirmDeleteCategory: 'למחוק את הקטגוריה?',
+    confirmDeleteBudget: 'למחוק את התקציב?',
+    confirmIrreversible: 'אי אפשר לבטל את הפעולה הזו.',
+    toastSaved: 'נשמר',
+    toastDeleted: 'נמחק',
+    toastError: 'משהו השתבש. בדקו את החיבור ונסו שוב.',
+    loadingLabel: 'טוען…',
+    mainNavLabel: 'ניווט ראשי',
+    budgetRemaining: 'נותרו',
+    budgetOver: 'חריגה של',
+    budgetOf: 'מתוך',
+    spentShareOfIncome: 'מההכנסות כבר הוצאו',
+    filterTypeLabel: 'סוג תנועה',
+    filterMonthLabel: 'חודש',
+    noBudgetYet: 'אין תקציב',
+    monthTotal: 'סה"כ בחודש',
+    sharedWithPartner: 'מסונכרן בין שני הטלפונים',
   },
 } as const satisfies Record<Lang, Record<string, string>>
 
