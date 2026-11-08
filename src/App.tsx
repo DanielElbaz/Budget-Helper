@@ -6,6 +6,7 @@ import Transactions from './pages/Transactions'
 import Budgets from './pages/Budgets'
 import Categories from './pages/Categories'
 import Login from './pages/Login'
+import Import from './pages/Import'
 import { ensureDefaultCategories, generateRecurringOccurrences } from './lib/data'
 import { LangProvider } from './lib/i18n'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -29,6 +30,7 @@ function AuthGate() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/import" element={<Import />} />
       </Routes>
     </Layout>
   )

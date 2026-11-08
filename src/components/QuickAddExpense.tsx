@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ChevronRight, Plus, X } from 'lucide-react'
 import type { Category } from '../types'
 import { addTransaction, useCategories } from '../lib/data'
@@ -17,6 +18,7 @@ export default function QuickAddExpense() {
   const [selected, setSelected] = useState<Category | null>(null)
   const [amount, setAmount] = useState('')
   const [saving, setSaving] = useState(false)
+  const { pathname } = useLocation()
 
   function close() {
     setOpen(false)
@@ -53,6 +55,9 @@ export default function QuickAddExpense() {
     setSaving(false)
     if (ok) close()
   }
+
+  // The import page has its own sticky action bar where the button would sit.
+  if (pathname === '/import') return null
 
   return (
     <>

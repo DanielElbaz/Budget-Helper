@@ -168,6 +168,13 @@ export async function addTransaction(tx: Transaction) {
   if (error) throw error
 }
 
+/** Inserts many transactions in one request (statement import). */
+export async function addTransactions(txs: Transaction[]) {
+  if (txs.length === 0) return
+  const { error } = await supabase.from('transactions').insert(txs.map(transactionToRow))
+  if (error) throw error
+}
+
 export async function updateTransaction(id: string, tx: Transaction) {
   const { error } = await supabase.from('transactions').update(transactionToRow(tx)).eq('id', id)
   if (error) throw error

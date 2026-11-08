@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Plus, Receipt, Repeat, Trash2, X } from 'lucide-react'
+import { Plus, Receipt, Repeat, Trash2, Upload, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { addTransaction, deleteTransaction, updateTransaction, useCategories, useTransactions } from '../lib/data'
 import type { RecurrenceFrequency, Transaction, TransactionType } from '../types'
 import { Button, Card, CategoryBadge, EmptyState, Field, IconButton, Input, PageHeader, Segmented, Select, SkeletonList } from '../components/ui'
@@ -22,6 +23,7 @@ function emptyForm() {
 export default function Transactions() {
   const { t, locale, currency, translateCategoryName } = useLang()
   const { run, confirm } = useFeedback()
+  const navigate = useNavigate()
   const money = (amount: number) => formatMoney(amount, locale, currency)
   const categories = useCategories()
   const allTransactions = useTransactions()
@@ -145,9 +147,14 @@ export default function Transactions() {
               {t('closeButton')}
             </Button>
           ) : (
-            <Button icon={Plus} onClick={() => setShowForm(true)}>
-              {t('addButton')}
-            </Button>
+            <div className="flex shrink-0 gap-2">
+              <Button variant="secondary" icon={Upload} onClick={() => navigate('/import')}>
+                {t('importButton')}
+              </Button>
+              <Button icon={Plus} onClick={() => setShowForm(true)}>
+                {t('addButton')}
+              </Button>
+            </div>
           )
         }
       />
