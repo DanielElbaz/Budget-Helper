@@ -31,6 +31,12 @@ L'app a besoin d'un projet Supabase gratuit pour que les données soient partag�
 3. Dans **Authentication → Users**, clique **Add user** et crée un seul compte partagé pour vous deux, par exemple :
    - Email : `famille@budget-helper.local` (n'importe quel email, pas besoin qu'il existe vraiment)
    - Password : votre "code d'accès" commun (celui que vous taperez tous les deux sur l'écran de connexion)
+   Puis, dans **SQL Editor**, ajoute ce compte au foyer (sans ça, il ne voit aucune donnée) :
+   ```sql
+   insert into household_members (user_id)
+   select id from auth.users where email = 'famille@budget-helper.local';
+   ```
+   Enfin, ferme les inscriptions : **Authentication → Sign In / Providers** → décoche **Allow new users to sign up**, et active **Leaked password protection**.
 4. Dans **Project Settings → API**, récupère `Project URL` et la clé `anon public`.
 5. Copie `.env.example` vers `.env.local` et renseigne :
    ```

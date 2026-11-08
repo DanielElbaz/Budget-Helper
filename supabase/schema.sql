@@ -36,20 +36,40 @@ create index if not exists transactions_category_id_idx on transactions(category
 create index if not exists transactions_date_idx on transactions(date);
 create index if not exists transactions_template_id_idx on transactions(template_id);
 
--- Row Level Security: only the couple's signed-in account (the single shared
--- Supabase Auth user created during setup) may read or write anything.
+-- Household membership: only accounts listed here can access the budget data.
+-- Being signed in is NOT enough (anyone can sign up with the public anon key
+-- if sign-ups are enabled), so every policy checks membership.
+create table if not exists household_members (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+-- Row Level Security on every table.
+alter table household_members enable row level security;
 alter table categories enable row level security;
 alter table transactions enable row level security;
 alter table budgets enable row level security;
 
-create policy "authenticated full access" on categories
-  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- A member can only see their own membership row. There is no insert/update/
+-- delete policy: members are added from the SQL editor only (see README).
+create policy "members read own row" on household_members
+  for select to authenticated using (user_id = (select auth.uid()));
 
-create policy "authenticated full access" on transactions
-  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "household members full access" on categories for all to authenticated
+  using (exists (select 1 from household_members m where m.user_id = (select auth.uid())))
+  with check (exists (select 1 from household_members m where m.user_id = (select auth.uid())));
 
-create policy "authenticated full access" on budgets
-  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "household members full access" on transactions for all to authenticated
+  using (exists (select 1 from household_members m where m.user_id = (select auth.uid())))
+  with check (exists (select 1 from household_members m where m.user_id = (select auth.uid())));
+
+create policy "household members full access" on budgets for all to authenticated
+  using (exists (select 1 from household_members m where m.user_id = (select auth.uid())))
+  with check (exists (select 1 from household_members m where m.user_id = (select auth.uid())));
+
+-- After creating the shared account (README step 3), add it to the household:
+--   insert into household_members (user_id)
+--   select id from auth.users where email = 'famille@budget-helper.local';
 
 -- Real-time: let the app receive live inserts/updates/deletes so both phones
 -- stay in sync instantly.
