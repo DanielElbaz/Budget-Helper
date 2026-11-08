@@ -58,6 +58,18 @@ npm run build
 2. Dans les réglages du projet Vercel, ajoute les mêmes variables d'environnement que dans `.env.local` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SHARED_ACCOUNT_EMAIL`).
 3. Déploie. Vercel te donne une URL fixe en HTTPS (ex: `budget-helper.vercel.app`).
 
+## Garder la base Supabase active
+
+Sur l'offre gratuite, Supabase met le projet en pause après ~7 jours sans activité.
+Le workflow `.github/workflows/keep-supabase-alive.yml` envoie une petite requête
+tous les 3 jours pour l'éviter. Il faut ajouter deux secrets dans GitHub
+(Settings → Secrets and variables → Actions) :
+
+- `SUPABASE_URL` : même valeur que `VITE_SUPABASE_URL`
+- `SUPABASE_ANON_KEY` : même valeur que `VITE_SUPABASE_ANON_KEY`
+
+On peut le lancer à la main depuis l'onglet Actions (« Run workflow ») pour vérifier.
+
 ## Installer l'app sur le téléphone
 
 Une fois l'URL Vercel obtenue, sur **chaque** téléphone :
