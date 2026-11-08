@@ -21,7 +21,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { name: 'Santé', icon: 'heart-pulse', color: '#ef4444', type: 'expense' },
   { name: 'Transport & Carburant', icon: 'car', color: '#3b82f6', type: 'expense' },
   { name: 'Banque & Crédits', icon: 'landmark', color: '#6b7280', type: 'expense' },
-  { name: 'Épargne', icon: 'piggy-bank', color: '#10b981', type: 'expense' },
+  { name: 'Épargne', icon: 'gem', color: '#10b981', type: 'expense' },
   { name: 'Abonnements', icon: 'smartphone', color: '#0284c7', type: 'expense' },
 
   // Variable expenses
