@@ -94,8 +94,12 @@ function useTable<T>(table: TableName, fromRow: (row: any) => T): T[] | undefine
 
     load()
 
+    // Each hook instance needs its own channel: supabase.channel() returns the
+    // existing channel when the name is already used, and adding a listener to
+    // an already-subscribed channel throws (e.g. Dashboard + QuickAddExpense
+    // both read categories at the same time).
     const channel = supabase
-      .channel(`realtime:${table}`)
+      .channel(`realtime:${table}:${crypto.randomUUID()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table }, () => load())
       .subscribe()
 
