@@ -1,5 +1,6 @@
 import { useId, type ComponentProps, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { categoryIconFor } from '../lib/categoryIcons'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`rounded-2xl border border-line bg-surface p-4 shadow-sm sm:p-5 ${className}`}>{children}</div>
@@ -153,16 +154,20 @@ export function SkeletonList({ rows = 4, label }: { rows?: number; label: string
   )
 }
 
-/** Round badge showing a category's emoji on its tinted color. */
+/** Round badge with a category's icon on its tinted color. Legacy emoji icons
+ *  map to their SVG equivalent; anything unknown is shown as typed. */
 export function CategoryBadge({ icon, color, size = 'md' }: { icon: string; color: string; size?: 'sm' | 'md' | 'lg' }) {
   const sizes = { sm: 'h-8 w-8 text-base', md: 'h-10 w-10 text-lg', lg: 'h-12 w-12 text-2xl' }
+  const iconSizes = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-6 w-6' }
+  const Icon = categoryIconFor(icon)
   return (
     <span
       aria-hidden
       className={`flex shrink-0 items-center justify-center rounded-full ${sizes[size]}`}
-      style={{ backgroundColor: color + '26' }}
+      // Darken the category color for the glyph so light colors (yellow…) keep enough contrast.
+      style={{ backgroundColor: color + '26', color: `color-mix(in oklab, ${color} 70%, black)` }}
     >
-      {icon}
+      {Icon ? <Icon className={iconSizes[size]} strokeWidth={2} /> : icon}
     </span>
   )
 }

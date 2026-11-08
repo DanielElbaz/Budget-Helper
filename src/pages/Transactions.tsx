@@ -193,7 +193,7 @@ export default function Transactions() {
                     <option value="">{t('categoryPlaceholder')}</option>
                     {categoriesForType.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} {translateCategoryName(c.name)}
+                        {translateCategoryName(c.name)}
                       </option>
                     ))}
                   </Select>
@@ -318,7 +318,7 @@ export default function Transactions() {
                           aria-label={`${t('editButton')}: ${tx.description || catName}, ${money(tx.amount)}`}
                           className="flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 py-2.5 ps-3 text-start transition-colors duration-150 hover:bg-slate-50 active:bg-slate-100 sm:ps-4"
                         >
-                          <CategoryBadge icon={cat?.icon ?? '❓'} color={cat?.color ?? '#94a3b8'} />
+                          <CategoryBadge icon={cat?.icon ?? 'package'} color={cat?.color ?? '#94a3b8'} />
                           <div className="min-w-0 flex-1">
                             <p className="flex items-center gap-1.5 text-sm font-medium text-ink">
                               <span className="truncate">{tx.description || catName}</span>
