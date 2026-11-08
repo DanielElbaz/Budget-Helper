@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AlertTriangle, PieChart as PieIcon, TrendingDown, TrendingUp } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, PieChart as PieIcon, TrendingDown, TrendingUp } from 'lucide-react'
+import { categoryIconFor } from '../lib/categoryIcons'
 import { useBudgets, useCategories, useTransactions } from '../lib/data'
-import { Card, CategoryBadge, EmptyState, PageHeader, Skeleton } from '../components/ui'
+import { Button, Card, CategoryBadge, EmptyState, IconButton, PageHeader, Skeleton } from '../components/ui'
 import { currentMonthKey, formatMoney, formatMoneyCompact, lastNMonthKeys, monthKeyOf, monthLabel } from '../lib/utils'
 import { useLang } from '../lib/i18n'
 
@@ -17,7 +18,21 @@ export default function Dashboard() {
   const loading = transactions === undefined || categories === undefined
 
   const money = (amount: number) => formatMoney(amount, locale, currency)
-  const monthKey = currentMonthKey()
+  const thisMonth = currentMonthKey()
+  const [monthKey, setMonthKey] = useState(thisMonth)
+  const shiftMonth = (delta: number) => {
+    const [y, m] = monthKey.split('-').map(Number)
+    setMonthKey(currentMonthKey(new Date(y, m - 1 + delta, 1)))
+  }
+  const lastMonthWithExpenses = useMemo(
+    () =>
+      (transactions ?? [])
+        .filter((tx) => tx.type === 'expense')
+        .map((tx) => monthKeyOf(tx.date))
+        .sort()
+        .at(-1),
+    [transactions],
+  )
 
   const monthTxs = useMemo(() => (transactions ?? []).filter((tx) => monthKeyOf(tx.date) === monthKey), [transactions, monthKey])
   const totalIncome = monthTxs.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0)
@@ -37,7 +52,7 @@ export default function Dashboard() {
         return {
           id: categoryId,
           name: cat ? translateCategoryName(cat.name) : '?',
-          icon: cat?.icon ?? '❓',
+          icon: cat?.icon ?? 'package',
           value,
           color: cat?.color ?? '#94a3b8',
         }
@@ -46,7 +61,8 @@ export default function Dashboard() {
   }, [monthTxs, categories, translateCategoryName])
 
   const trendData = useMemo(() => {
-    return lastNMonthKeys(6).map((key) => {
+    const [y, m] = monthKey.split('-').map(Number)
+    return lastNMonthKeys(6, new Date(y, m - 1, 1)).map((key) => {
       const txs = (transactions ?? []).filter((tx) => monthKeyOf(tx.date) === key)
       return {
         month: new Intl.DateTimeFormat(locale, { month: 'short' }).format(new Date(`${key}-01T00:00:00`)),
@@ -54,7 +70,7 @@ export default function Dashboard() {
         expense: txs.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0),
       }
     })
-  }, [transactions, locale])
+  }, [transactions, locale, monthKey])
 
   const budgetAlerts = useMemo(() => {
     return (budgets ?? [])
@@ -69,7 +85,23 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
-      <PageHeader title={t('navDashboard')} subtitle={monthLabel(monthKey, locale)} />
+      <PageHeader title={t('navDashboard')} />
+
+      {/* Month switcher. RTL: the previous month is on the right. */}
+      <div className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface p-1.5">
+        <IconButton icon={ChevronRight} label={t('prevMonth')} onClick={() => shiftMonth(-1)} />
+        <div className="text-center">
+          <p className="font-semibold text-ink" aria-live="polite">
+            {monthLabel(monthKey, locale)}
+          </p>
+          {monthKey !== thisMonth && (
+            <button onClick={() => setMonthKey(thisMonth)} className="cursor-pointer text-xs font-medium text-brand-700 hover:underline">
+              {t('backToThisMonth')}
+            </button>
+          )}
+        </div>
+        <IconButton icon={ChevronLeft} label={t('nextMonth')} onClick={() => shiftMonth(1)} disabled={monthKey >= thisMonth} className="disabled:cursor-not-allowed disabled:opacity-30" />
+      </div>
 
       {loading ? (
         <div className="space-y-3" aria-busy="true" aria-label={t('loadingLabel')}>
@@ -135,7 +167,16 @@ export default function Dashboard() {
             <Card>
               <h3 className="mb-4 font-semibold text-ink">{t('pieTitle')}</h3>
               {breakdown.length === 0 ? (
-                <EmptyState icon={PieIcon} text={t('pieEmpty')} />
+                <div>
+                  <EmptyState icon={PieIcon} text={t('pieEmpty')} />
+                  {lastMonthWithExpenses && lastMonthWithExpenses !== monthKey && (
+                    <div className="flex justify-center">
+                      <Button variant="secondary" onClick={() => setMonthKey(lastMonthWithExpenses)}>
+                        {t('showLastMonthWithExpenses')} {monthLabel(lastMonthWithExpenses, locale)}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="relative mx-auto h-48 w-48" dir="ltr">
@@ -159,8 +200,9 @@ export default function Dashboard() {
                     {breakdown.map((b) => (
                       <li key={b.id} className="flex items-center gap-3 py-2.5">
                         <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: b.color }} aria-hidden />
-                        <span className="min-w-0 flex-1 truncate text-sm text-ink">
-                          {b.icon} {b.name}
+                        <span className="flex min-w-0 flex-1 items-center gap-2 text-sm text-ink">
+                          <CategoryIcon stored={b.icon} />
+                          <span className="truncate">{b.name}</span>
                         </span>
                         <span className="num text-xs text-ink-subtle">{Math.round((b.value / totalExpense) * 100)}%</span>
                         <span className="num w-24 text-end text-sm font-semibold text-ink">{money(b.value)}</span>
@@ -225,4 +267,9 @@ function StatTile({
       <p className="num mt-2 text-xl font-bold text-ink">{value}</p>
     </Card>
   )
+}
+
+function CategoryIcon({ stored }: { stored: string }) {
+  const Icon = categoryIconFor(stored)
+  return Icon ? <Icon className="h-4 w-4 shrink-0 text-ink-subtle" aria-hidden /> : <span aria-hidden>{stored}</span>
 }

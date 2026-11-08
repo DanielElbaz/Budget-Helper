@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { addCategory, categoryUsage, deleteBudget, deleteCategory, updateCategory, useCategories } from '../lib/data'
-import { ICON_CHOICES, COLOR_CHOICES } from '../lib/defaultCategories'
+import { COLOR_CHOICES } from '../lib/defaultCategories'
+import { CATEGORY_ICONS, ICON_CHOICES, categoryIconKey } from '../lib/categoryIcons'
 import type { Category, TransactionType } from '../types'
 import { Button, Card, CategoryBadge, Field, IconButton, Input, PageHeader, Segmented, SkeletonList } from '../components/ui'
 import { useFeedback } from '../components/feedback'
@@ -26,7 +27,7 @@ export default function Categories() {
   function startEdit(category: Category) {
     setEditingId(category.id!)
     // Default categories are stored with their original name; edit the Hebrew one.
-    setForm({ name: translateCategoryName(category.name), icon: category.icon, color: category.color, type: category.type })
+    setForm({ name: translateCategoryName(category.name), icon: categoryIconKey(category.icon) ?? category.icon, color: category.color, type: category.type })
     setError('')
     setShowForm(true)
     requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -129,20 +130,25 @@ export default function Categories() {
             <fieldset>
               <legend className="mb-1.5 text-sm font-medium text-ink-muted">{t('iconLabel')}</legend>
               <div className="flex flex-wrap gap-2">
-                {ICON_CHOICES.map((icon) => (
-                  <button
-                    type="button"
-                    key={icon}
-                    aria-label={icon}
-                    aria-pressed={form.icon === icon}
-                    onClick={() => setForm({ ...form, icon })}
-                    className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-xl transition-colors duration-150 ${
-                      form.icon === icon ? 'bg-brand-100 ring-2 ring-brand-600' : 'bg-slate-100 hover:bg-slate-200'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
+                {ICON_CHOICES.map((key) => {
+                  const { icon: Icon, label } = CATEGORY_ICONS[key]
+                  const active = form.icon === key
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      aria-label={label}
+                      title={label}
+                      aria-pressed={active}
+                      onClick={() => setForm({ ...form, icon: key })}
+                      className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150 ${
+                        active ? 'bg-brand-100 text-brand-700 ring-2 ring-brand-600' : 'bg-slate-100 text-ink-muted hover:bg-slate-200'
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </button>
+                  )
+                })}
               </div>
             </fieldset>
 

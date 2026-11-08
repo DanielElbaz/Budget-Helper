@@ -4,7 +4,7 @@
    green for income, red for alerts). Components use `brand-*` so the whole
    palette can be changed here in one place. */
 @theme {
-  --font-sans: 'IBM Plex Sans Hebrew', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Rubik', system-ui, 'Segoe UI', Roboto, sans-serif;
 
   --color-brand-50: var(--color-blue-50);
   --color-brand-100: var(--color-blue-100);
