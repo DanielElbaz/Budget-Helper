@@ -1,4 +1,4 @@
-export function formatMoney(amount: number, locale = 'fr-FR', currency = 'EUR') {
+export function formatMoney(amount: number, locale = 'he-IL', currency = 'ILS') {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
@@ -14,7 +14,7 @@ export function monthKeyOf(isoDate: string) {
   return isoDate.slice(0, 7)
 }
 
-export function monthLabel(monthKey: string, locale = 'fr-FR') {
+export function monthLabel(monthKey: string, locale = 'he-IL') {
   const [year, month] = monthKey.split('-').map(Number)
   const date = new Date(year, month - 1, 1)
   return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(date)

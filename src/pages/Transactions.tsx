@@ -152,7 +152,7 @@ export default function Transactions() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label>
-                  {t('amountLabel')} ({currency === 'ILS' ? '₪' : '€'})
+                  {t('amountLabel')} (₪)
                 </Label>
                 <Input
                   type="number"

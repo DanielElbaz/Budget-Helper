@@ -101,7 +101,7 @@ export default function Budgets() {
                     <Input
                       type="number"
                       min="0"
-                      placeholder={`${t('limitPlaceholder')} ${currency === 'ILS' ? '₪' : '€'}`}
+                      placeholder={`${t('limitPlaceholder')} ₪`}
                       value={drafts[c.id!] ?? ''}
                       onChange={(e) => setDrafts((d) => ({ ...d, [c.id!]: e.target.value }))}
                       className="w-28"
