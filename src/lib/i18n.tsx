@@ -1,14 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { defaultCategoryNameTranslations, translations, type Lang, type TranslationKey } from './translations'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import { defaultCategoryNameTranslations, translations, type TranslationKey } from './translations'
 
-const STORAGE_KEY = 'budget-helper-lang'
-const RTL_LANGS: Lang[] = ['he']
+// The app is Hebrew-only, in shekels.
+const LANG = 'he' as const
 
 interface LangContextValue {
-  lang: Lang
-  setLang: (lang: Lang) => void
   t: (key: TranslationKey) => string
-  dir: 'ltr' | 'rtl'
+  dir: 'rtl'
   currency: string
   locale: string
   translateCategoryName: (name: string) => string
@@ -16,39 +14,23 @@ interface LangContextValue {
 
 const LangContext = createContext<LangContextValue | null>(null)
 
-function getInitialLang(): Lang {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === 'he' ? 'he' : 'fr'
-}
-
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(getInitialLang)
-
-  const dir = RTL_LANGS.includes(lang) ? 'rtl' : 'ltr'
-  const locale = lang === 'he' ? 'he-IL' : 'fr-FR'
-  const currency = lang === 'he' ? 'ILS' : 'EUR'
-
   useEffect(() => {
-    document.documentElement.dir = dir
-    document.documentElement.lang = lang
-  }, [dir, lang])
-
-  function setLang(next: Lang) {
-    localStorage.setItem(STORAGE_KEY, next)
-    setLangState(next)
-  }
+    document.documentElement.dir = 'rtl'
+    document.documentElement.lang = LANG
+  }, [])
 
   const value = useMemo<LangContextValue>(
     () => ({
-      lang,
-      setLang,
-      t: (key) => translations[lang][key],
-      dir,
-      currency,
-      locale,
-      translateCategoryName: (name) => defaultCategoryNameTranslations[name]?.[lang] ?? name,
+      t: (key) => translations[LANG][key],
+      dir: 'rtl',
+      currency: 'ILS',
+      locale: 'he-IL',
+      // Default categories are stored in the database under their original
+      // French names; show their Hebrew name.
+      translateCategoryName: (name) => defaultCategoryNameTranslations[name]?.[LANG] ?? name,
     }),
-    [lang, dir, currency, locale],
+    [],
   )
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>

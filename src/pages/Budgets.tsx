@@ -1,162 +1,237 @@
 import { useMemo, useState } from 'react'
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { addBudget, deleteBudget, updateBudget, useBudgets, useCategories, useTransactions } from '../lib/data'
-import { Button, Card, Input } from '../components/ui'
+import type { Budget, Category } from '../types'
+import { Button, Card, CategoryBadge, IconButton, PageHeader, SkeletonList } from '../components/ui'
+import { useFeedback } from '../components/feedback'
 import { currentMonthKey, formatMoney, monthKeyOf, monthLabel } from '../lib/utils'
 import { useLang } from '../lib/i18n'
 
 export default function Budgets() {
   const { t, locale, currency, translateCategoryName } = useLang()
+  const { run, confirm } = useFeedback()
   const money = (amount: number) => formatMoney(amount, locale, currency)
   const allCategories = useCategories()
-  const categories = allCategories?.filter((c) => c.type === 'expense')
   const budgets = useBudgets()
   const allTransactions = useTransactions()
-  const transactions = allTransactions?.filter((t) => t.type === 'expense')
-
-  const [drafts, setDrafts] = useState<Record<string, string>>({})
+  const loading = allCategories === undefined || budgets === undefined || allTransactions === undefined
   const monthKey = currentMonthKey()
 
   const spentByCategory = useMemo(() => {
     const map = new Map<string, number>()
-    for (const tx of transactions ?? []) {
-      if (monthKeyOf(tx.date) !== monthKey) continue
+    for (const tx of allTransactions ?? []) {
+      if (tx.type !== 'expense' || monthKeyOf(tx.date) !== monthKey) continue
       map.set(tx.categoryId, (map.get(tx.categoryId) ?? 0) + tx.amount)
     }
     return map
-  }, [transactions, monthKey])
+  }, [allTransactions, monthKey])
 
-  function budgetFor(categoryId: string) {
-    return budgets?.find((b) => b.categoryId === categoryId)
+  const rows = useMemo(() => {
+    const list = (allCategories ?? [])
+      .filter((c) => c.type === 'expense')
+      .map((c) => {
+        const budget = budgets?.find((b) => b.categoryId === c.id)
+        const spent = spentByCategory.get(c.id!) ?? 0
+        return { category: c, budget, spent, pct: budget ? (spent / budget.monthlyLimit) * 100 : -1 }
+      })
+    // Budgeted categories first, the closest to their limit on top.
+    return list.sort((a, b) => b.pct - a.pct)
+  }, [allCategories, budgets, spentByCategory])
+
+  // Only count spending in categories that actually have a budget, so the
+  // total compares like with like.
+  const budgeted = rows.filter((r) => r.budget)
+  const totalBudget = budgeted.reduce((sum, r) => sum + r.budget!.monthlyLimit, 0)
+  const totalSpent = budgeted.reduce((sum, r) => sum + r.spent, 0)
+  const remaining = totalBudget - totalSpent
+
+  async function saveLimit(category: Category, budget: Budget | undefined, limit: number) {
+    return run(
+      () => (budget ? updateBudget(budget.id!, { monthlyLimit: limit }) : addBudget({ categoryId: category.id!, monthlyLimit: limit })),
+      t('toastSaved'),
+    )
   }
 
-  async function saveBudget(categoryId: string, value: string) {
-    const limit = Number(value)
-    if (!limit || limit <= 0) return
-    const existing = budgetFor(categoryId)
-    if (existing) {
-      await updateBudget(existing.id!, { monthlyLimit: limit })
-    } else {
-      await addBudget({ categoryId, monthlyLimit: limit })
-    }
-    setDrafts((d) => ({ ...d, [categoryId]: '' }))
+  async function removeBudget(category: Category, budget: Budget) {
+    const ok = await confirm({ title: t('confirmDeleteBudget'), body: translateCategoryName(category.name) })
+    if (ok) await run(() => deleteBudget(budget.id!), t('toastDeleted'))
   }
-
-  async function removeBudget(id: string) {
-    await deleteBudget(id)
-  }
-
-  const totalBudget = (budgets ?? []).reduce((sum, b) => sum + b.monthlyLimit, 0)
-  const totalSpent = (categories ?? []).reduce((sum, c) => sum + (spentByCategory.get(c.id!) ?? 0), 0)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-purple-950">{t('budgetsTitle')}</h2>
-        <p className="text-sm text-purple-400">
-          {t('budgetsSubtitle')} {monthLabel(monthKey, locale)}.
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <PageHeader title={t('budgetsTitle')} subtitle={`${t('budgetsSubtitle')} ${monthLabel(monthKey, locale)}`} />
 
-      {totalBudget > 0 && (
-        <Card className="bg-gradient-to-br from-purple-600 to-fuchsia-500 text-white">
-          <p className="text-sm opacity-80">{t('totalBudgeted')}</p>
-          <div className="mt-1 flex items-end justify-between">
-            <p className="text-3xl font-bold">{money(totalSpent)}</p>
-            <p className="text-sm opacity-80">/ {money(totalBudget)}</p>
+      {!loading && totalBudget > 0 && (
+        <div className="rounded-2xl bg-brand-600 p-5 text-white shadow-sm">
+          <p className="text-sm text-brand-100">{t('totalBudgeted')}</p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
+            <p className="num text-3xl font-bold">{money(totalSpent)}</p>
+            <p className="text-sm text-brand-100">
+              {t('budgetOf')} <span className="num">{money(totalBudget)}</span>
+            </p>
           </div>
-          <ProgressBar value={totalSpent} max={totalBudget} light />
-        </Card>
+          <ProgressBar value={totalSpent} max={totalBudget} onDark />
+          <p className={`mt-2 text-sm font-medium ${remaining < 0 ? 'text-red-200' : 'text-brand-50'}`}>
+            {remaining < 0 ? t('budgetOver') : t('budgetRemaining')} <span className="num">{money(Math.abs(remaining))}</span>
+          </p>
+        </div>
       )}
 
-      <div className="space-y-3">
-        {(categories ?? []).map((c) => {
-          const budget = budgetFor(c.id!)
-          const spent = spentByCategory.get(c.id!) ?? 0
-          return (
-            <Card key={c.id}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-base"
-                    style={{ backgroundColor: c.color + '33' }}
-                  >
-                    {c.icon}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-purple-900">{translateCategoryName(c.name)}</p>
-                    {budget && (
-                      <p className="text-xs text-purple-400">
-                        {money(spent)} / {money(budget.monthlyLimit)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {budget ? (
-                  <button onClick={() => removeBudget(budget.id!)} className="cursor-pointer text-xs text-red-400 hover:underline">
-                    {t('removeBudget')}
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min="0"
-                      placeholder={`${t('limitPlaceholder')} ${currency === 'ILS' ? '₪' : '€'}`}
-                      value={drafts[c.id!] ?? ''}
-                      onChange={(e) => setDrafts((d) => ({ ...d, [c.id!]: e.target.value }))}
-                      className="w-28"
-                    />
-                    <Button variant="ghost" onClick={() => saveBudget(c.id!, drafts[c.id!] ?? '')}>
-                      {t('defineButton')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {budget && (
-                <div className="mt-3">
-                  <ProgressBar value={spent} max={budget.monthlyLimit} exceededLabel={t('budgetExceeded')} />
-                </div>
-              )}
-            </Card>
-          )
-        })}
-        {(categories ?? []).length === 0 && (
-          <Card>
-            <p className="text-center text-sm text-purple-300">{t('noExpenseCategories')}</p>
-          </Card>
-        )}
-      </div>
+      {loading ? (
+        <SkeletonList rows={5} label={t('loadingLabel')} />
+      ) : rows.length === 0 ? (
+        <Card>
+          <p className="py-4 text-center text-sm text-ink-subtle">{t('noExpenseCategories')}</p>
+        </Card>
+      ) : (
+        <ul className="space-y-3">
+          {rows.map(({ category, budget, spent }) => (
+            <li key={category.id}>
+              <BudgetRow
+                category={category}
+                budget={budget}
+                spent={spent}
+                name={translateCategoryName(category.name)}
+                money={money}
+                onSave={(limit) => saveLimit(category, budget, limit)}
+                onRemove={budget ? () => removeBudget(category, budget) : undefined}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
 
-function ProgressBar({
-  value,
-  max,
-  light = false,
-  exceededLabel,
+function BudgetRow({
+  category,
+  budget,
+  spent,
+  name,
+  money,
+  onSave,
+  onRemove,
 }: {
-  value: number
-  max: number
-  light?: boolean
-  exceededLabel?: string
+  category: Category
+  budget?: Budget
+  spent: number
+  name: string
+  money: (n: number) => string
+  onSave: (limit: number) => Promise<boolean>
+  onRemove?: () => void
 }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
-  const overBudget = value > max
-  let barColor = light ? 'bg-white' : 'bg-green-500'
-  if (!light) {
-    if (overBudget) barColor = 'bg-red-500'
-    else if (pct > 80) barColor = 'bg-amber-500'
-  } else if (overBudget) {
-    barColor = 'bg-red-300'
+  const { t } = useLang()
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [saving, setSaving] = useState(false)
+  const inputId = `limit-${category.id}`
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    const limit = Number(draft.replace(',', '.'))
+    if (!limit || limit <= 0) return
+    setSaving(true)
+    const ok = await onSave(limit)
+    setSaving(false)
+    if (ok) {
+      setDraft('')
+      setEditing(false)
+    }
   }
+
+  const showForm = editing
+  const over = budget ? spent - budget.monthlyLimit : 0
+
   return (
-    <div>
-      <div className={`h-2.5 w-full overflow-hidden rounded-full ${light ? 'bg-white/25' : 'bg-purple-100'}`}>
-        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+    <Card>
+      <div className="flex items-center gap-3">
+        <CategoryBadge icon={category.icon} color={category.color} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-ink">{name}</p>
+          {budget ? (
+            <p className="text-xs text-ink-subtle">
+              <span className="num">{money(spent)}</span> {t('budgetOf')} <span className="num">{money(budget.monthlyLimit)}</span>
+            </p>
+          ) : (
+            <p className="text-xs text-ink-subtle">{t('noBudgetYet')}</p>
+          )}
+        </div>
+        {!budget && !editing && (
+          <Button variant="secondary" icon={Plus} className="shrink-0" onClick={() => setEditing(true)}>
+            {t('defineButton')}
+          </Button>
+        )}
+        {budget && !editing && (
+          <div className="flex shrink-0">
+            <IconButton
+              icon={Pencil}
+              label={t('editButton')}
+              onClick={() => {
+                setDraft(String(budget.monthlyLimit))
+                setEditing(true)
+              }}
+            />
+            {onRemove && <IconButton icon={Trash2} label={t('removeBudget')} tone="danger" onClick={onRemove} />}
+          </div>
+        )}
       </div>
-      {overBudget && !light && exceededLabel && <p className="mt-1 text-xs font-medium text-red-500">{exceededLabel}</p>}
+
+      {showForm && (
+        <form onSubmit={submit} className="mt-3 flex items-center gap-2">
+          <label htmlFor={inputId} className="sr-only">
+            {t('limitPlaceholder')} — {name}
+          </label>
+          <div className="relative flex-1" dir="ltr">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-subtle">₪</span>
+            <input
+              id={inputId}
+              autoFocus
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder={t('limitPlaceholder')}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.replace(/[^\d.,]/g, ''))}
+              className="num min-h-11 w-full rounded-xl border border-slate-300 bg-surface ps-8 pe-3 text-end text-base text-ink outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          <Button type="submit" icon={Check} disabled={saving || !draft}>
+            {t('saveButton')}
+          </Button>
+          <IconButton icon={X} label={t('cancelButton')} onClick={() => setEditing(false)} />
+        </form>
+      )}
+
+      {budget && (
+        <div className="mt-3">
+          <ProgressBar value={spent} max={budget.monthlyLimit} />
+          {over > 0 && (
+            <p className="mt-1.5 text-xs font-medium text-red-700">
+              {t('budgetExceeded')}: <span className="num">{money(over)}</span>
+            </p>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function ProgressBar({ value, max, onDark = false }: { value: number; max: number; onDark?: boolean }) {
+  const pct = max > 0 ? (value / max) * 100 : 0
+  let barColor = 'bg-emerald-500'
+  if (pct > 100) barColor = 'bg-red-500'
+  else if (pct >= 80) barColor = 'bg-amber-500'
+  if (onDark) barColor = pct > 100 ? 'bg-red-300' : 'bg-white'
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(pct)}
+      className={`mt-3 h-2.5 w-full overflow-hidden rounded-full ${onDark ? 'bg-white/25' : 'bg-slate-100'}`}
+    >
+      <div className={`h-full rounded-full transition-[width] duration-500 ${barColor}`} style={{ width: `${Math.min(pct, 100)}%` }} />
     </div>
   )
 }

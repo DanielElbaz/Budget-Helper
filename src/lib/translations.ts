@@ -1,108 +1,6 @@
-export type Lang = 'fr' | 'he'
+export type Lang = 'he'
 
 export const translations = {
-  fr: {
-    appName: 'Budget Helper',
-    tagline: 'Tes finances, simplifiées',
-    navDashboard: 'Dashboard',
-    navTransactions: 'Transactions',
-    navBudgets: 'Budgets',
-    navCategories: 'Catégories',
-
-    // Dashboard
-    statIncome: 'Revenus',
-    statExpense: 'Dépenses',
-    statBalance: 'Reste à vivre',
-    budgetAlertsTitle: '⚠️ Budgets à surveiller',
-    budgetExceededSuffix: ' — dépassé',
-    pieTitle: 'Répartition des dépenses',
-    pieEmpty: "Pas de dépense ce mois-ci.",
-    trendTitle: 'Évolution sur 6 mois',
-    legendIncome: 'Revenus',
-    legendExpense: 'Dépenses',
-
-    // Transactions
-    transactionsTitle: 'Transactions',
-    transactionsSubtitle: 'Tous tes revenus et dépenses.',
-    addButton: '+ Ajouter',
-    addPlainButton: 'Ajouter',
-    closeButton: 'Fermer',
-    typeExpense: '💸 Dépense',
-    typeIncome: '💰 Revenu',
-    amountLabel: 'Montant',
-    categoryLabel: 'Catégorie',
-    categoryPlaceholder: 'Choisir...',
-    dateLabel: 'Date',
-    descriptionLabel: 'Description',
-    descriptionPlaceholder: 'ex: Courses Carrefour',
-    recurringLabel: 'Récurrente',
-    freqWeekly: 'Hebdomadaire',
-    freqMonthly: 'Mensuelle',
-    freqYearly: 'Annuelle',
-    errorAmount: 'Le montant doit être positif',
-    errorCategory: 'Choisis une catégorie',
-    saveButton: 'Enregistrer',
-    filterAllTypes: 'Tous types',
-    filterExpenses: 'Dépenses',
-    filterIncomes: 'Revenus',
-    filterAllMonths: 'Tous les mois',
-    transactionsEmpty: 'Aucune transaction pour l’instant.',
-    recurringTitle: 'Récurrente',
-
-    // Budgets
-    budgetsTitle: 'Budgets',
-    budgetsSubtitle: 'Fixe un plafond mensuel par catégorie —',
-    totalBudgeted: 'Total budgété ce mois',
-    removeBudget: 'Supprimer le budget',
-    limitPlaceholder: 'Plafond',
-    defineButton: 'Définir',
-    noExpenseCategories: 'Crée d’abord des catégories de dépenses dans l’onglet Catégories.',
-    budgetExceeded: '⚠️ Budget dépassé',
-
-    // Categories
-    categoriesTitle: 'Catégories',
-    categoriesSubtitle: 'Organise tes revenus et dépenses par catégorie.',
-    editCategoryTitle: 'Modifier la catégorie',
-    newCategoryTitle: 'Nouvelle catégorie',
-    nameLabel: 'Nom',
-    typeLabel: 'Type',
-    typeOptionExpense: 'Dépense',
-    typeOptionIncome: 'Revenu',
-    namePlaceholder: 'ex: Vacances',
-    iconLabel: 'Icône',
-    colorLabel: 'Couleur',
-    errorName: 'Le nom est requis',
-    cancelButton: 'Annuler',
-    groupExpenses: 'Dépenses',
-    groupIncomes: 'Revenus',
-    categoriesEmpty: 'Aucune catégorie',
-    deleteCategoryBlocked: 'Impossible de supprimer : des transactions utilisent cette catégorie.',
-
-    langSwitchLabel: 'Langue',
-
-    // Auth
-    loginTitle: 'Accès privé',
-    loginSubtitle: 'Entrez votre code d’accès partagé pour continuer.',
-    loginCodeLabel: 'Code d’accès',
-    loginButton: 'Entrer',
-    loginError: 'Code incorrect. Réessaie.',
-    logoutButton: 'Se déconnecter',
-    loginLoading: 'Connexion...',
-
-    // Quick add
-    quickAddButton: 'Ajout rapide',
-    quickAddPickCategory: 'Choisis une catégorie',
-    quickAddAmount: 'Montant dépensé',
-    quickAddConfirm: 'Enregistrer la dépense',
-    quickAddBack: '← Catégorie',
-    quickAddSuccess: 'Dépense ajoutée !',
-
-    // Recurring / fixed expenses
-    fixedExpensesLabel: 'Dépense fixe (revient chaque mois)',
-    fixedExpensesHint: 'Se répète automatiquement le mois suivant, pas besoin de la ressaisir.',
-    syncBadgeOn: 'Synchronisé',
-    syncBadgeOff: 'Hors ligne',
-  },
   he: {
     appName: 'Budget Helper',
     tagline: 'הכספים שלך, פשוט',
@@ -115,7 +13,7 @@ export const translations = {
     statIncome: 'הכנסות',
     statExpense: 'הוצאות',
     statBalance: 'נשאר לחיות',
-    budgetAlertsTitle: '⚠️ תקציבים לעקוב אחריהם',
+    budgetAlertsTitle: 'תקציבים לעקוב אחריהם',
     budgetExceededSuffix: ' — חריגה',
     pieTitle: 'פילוח הוצאות',
     pieEmpty: 'אין הוצאות החודש.',
@@ -126,11 +24,11 @@ export const translations = {
     // Transactions
     transactionsTitle: 'תנועות',
     transactionsSubtitle: 'כל ההכנסות וההוצאות שלך.',
-    addButton: '+ הוספה',
+    addButton: 'הוספה',
     addPlainButton: 'הוספה',
     closeButton: 'סגירה',
-    typeExpense: '💸 הוצאה',
-    typeIncome: '💰 הכנסה',
+    typeExpense: 'הוצאה',
+    typeIncome: 'הכנסה',
     amountLabel: 'סכום',
     categoryLabel: 'קטגוריה',
     categoryPlaceholder: 'בחר/י...',
@@ -159,7 +57,7 @@ export const translations = {
     limitPlaceholder: 'תקרה',
     defineButton: 'קביעה',
     noExpenseCategories: 'צריך קודם ליצור קטגוריות הוצאה בלשונית קטגוריות.',
-    budgetExceeded: '⚠️ חריגה מהתקציב',
+    budgetExceeded: 'חריגה מהתקציב',
 
     // Categories
     categoriesTitle: 'קטגוריות',
@@ -180,7 +78,6 @@ export const translations = {
     categoriesEmpty: 'אין קטגוריות',
     deleteCategoryBlocked: 'לא ניתן למחוק: יש תנועות המשויכות לקטגוריה זו.',
 
-    langSwitchLabel: 'שפה',
 
     // Auth
     loginTitle: 'גישה פרטית',
@@ -196,7 +93,7 @@ export const translations = {
     quickAddPickCategory: 'בחר/י קטגוריה',
     quickAddAmount: 'סכום שהוצא',
     quickAddConfirm: 'שמירת ההוצאה',
-    quickAddBack: '← קטגוריה',
+    quickAddBack: 'חזרה לקטגוריות',
     quickAddSuccess: 'ההוצאה נוספה!',
 
     // Recurring / fixed expenses
@@ -204,10 +101,32 @@ export const translations = {
     fixedExpensesHint: 'חוזרת אוטומטית בחודש הבא, אין צורך להזין שוב.',
     syncBadgeOn: 'מסונכרן',
     syncBadgeOff: 'לא מקוון',
+
+    // Feedback & confirmations
+    deleteButton: 'מחיקה',
+    editButton: 'עריכה',
+    confirmDeleteTransaction: 'למחוק את התנועה?',
+    confirmDeleteCategory: 'למחוק את הקטגוריה?',
+    confirmDeleteBudget: 'למחוק את התקציב?',
+    confirmIrreversible: 'אי אפשר לבטל את הפעולה הזו.',
+    toastSaved: 'נשמר',
+    toastDeleted: 'נמחק',
+    toastError: 'משהו השתבש. בדקו את החיבור ונסו שוב.',
+    loadingLabel: 'טוען…',
+    mainNavLabel: 'ניווט ראשי',
+    budgetRemaining: 'נותרו',
+    budgetOver: 'חריגה של',
+    budgetOf: 'מתוך',
+    spentShareOfIncome: 'מההכנסות כבר הוצאו',
+    filterTypeLabel: 'סוג תנועה',
+    filterMonthLabel: 'חודש',
+    noBudgetYet: 'אין תקציב',
+    monthTotal: 'סה"כ בחודש',
+    sharedWithPartner: 'מסונכרן בין שני הטלפונים',
   },
 } as const satisfies Record<Lang, Record<string, string>>
 
-export type TranslationKey = keyof (typeof translations)['fr']
+export type TranslationKey = keyof (typeof translations)['he']
 
 // Default seeded category names, translated for display (custom user categories stay as typed).
 export const defaultCategoryNameTranslations: Record<string, Partial<Record<Lang, string>>> = {

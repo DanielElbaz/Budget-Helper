@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import { ensureDefaultCategories, generateRecurringOccurrences } from './lib/data'
 import { LangProvider } from './lib/i18n'
 import { AuthProvider, useAuth } from './lib/auth'
+import { FeedbackProvider } from './components/feedback'
 
 function AuthGate() {
   const { session, loading } = useAuth()
@@ -36,9 +37,11 @@ function AuthGate() {
 function App() {
   return (
     <LangProvider>
-      <AuthProvider>
-        <AuthGate />
-      </AuthProvider>
+      <FeedbackProvider>
+        <AuthProvider>
+          <AuthGate />
+        </AuthProvider>
+      </FeedbackProvider>
     </LangProvider>
   )
 }
